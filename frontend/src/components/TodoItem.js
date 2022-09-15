@@ -4,7 +4,6 @@ import { Draggable } from "react-beautiful-dnd";
 
 export const TodoItem = ({ item, index }) => {
   const [isUpdate, setIsUpdate] = useState("");
-  const [newValue, setNewValue] = useState("");
   const { deleteTodo, updateTodo } = useTodoContext();
 
   const handleDelete = async (id) => {

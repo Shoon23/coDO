@@ -16,14 +16,14 @@ todo = Blueprint('todo',__name__,url_prefix='/api/todo')
 def create_new_todo():
     todo = request.json['todo']
     todoOrder = request.json['order']
-    isCompleted = request.json['isCompleted']
-    print(isCompleted)
+
+
     if not todo:
         return jsonify({"message":"empty todo invalid"})
 
     user_id = get_jwt_identity()
 
-    newTodo = Todo(todo_item=todo, user_id=user_id,order=todoOrder,isCompleted=isCompleted)
+    newTodo = Todo(todo_item=todo, user_id=user_id,order=todoOrder)
     db.session.add(newTodo)
     db.session.commit()
     
@@ -36,9 +36,7 @@ def get_all():
 
     user_id = get_jwt_identity()
 
-    user = User.query.filter_by(id=user_id).first()
-
-    todos = user.todos
+    todos = Todo.query.filter_by(user_id=user_id).order_by(Todo.order.asc()).all()
 
     return jsonify(todos_schema.dump(todos)),200
 
@@ -55,8 +53,6 @@ def update_todo(todo_id):
 
     if not todo:
         return jsonify({"error":"Not found"}),404
-
-    print(todoStatus)
 
     if newTodo:
        todo.todo_item = newTodo

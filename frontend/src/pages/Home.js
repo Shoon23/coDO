@@ -9,17 +9,11 @@ import useFetch from "../hooks/useFetch";
 export const Home = () => {
   const { auth } = useAuthContext();
   const api = useFetch();
-  const { state, addTodo, fetchData, dispatch } = useTodoContext();
-  const [todo, setTodo] = useState("");
+  const { state, fetchData, dispatch } = useTodoContext();
+
   useEffect(() => {
     fetchData(auth.access);
   }, []);
-
-  const newTodo = async (e) => {
-    e.preventDefault();
-    await addTodo(todo);
-    setTodo("");
-  };
 
   const handleDrag = (result) => {
     console.log(result);
@@ -35,6 +29,7 @@ export const Home = () => {
     let add;
     const table1 = Array.from(state.progress);
     const table2 = Array.from(state.completed);
+
     if (result.source.droppableId === "progress") {
       add = table1[result.source.index];
       table1.splice(result.source.index, 1);

@@ -16,6 +16,8 @@ const useFetch = () => {
     }
 
     const response = await fetch(url, config);
+    console.log(response);
+
     const data = await response.json();
     return {
       response,
