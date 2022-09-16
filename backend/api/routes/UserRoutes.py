@@ -1,6 +1,6 @@
 
 from flask import Blueprint,request,jsonify
-from ..extensions import db
+from ..extensions import db,bcrypt
 from ..models.UserModel import User
 import datetime
 from flask_jwt_extended import create_access_token,jwt_required,set_refresh_cookies,create_refresh_token,get_jwt,get_jwt_identity,unset_jwt_cookies
@@ -22,7 +22,9 @@ def register():
     if user:
         return jsonify({"error":"User already existing"}),409
 
-    newUser = User(email=email,username=username,password=password)
+    pw_hash = bcrypt.generate_password_hash(password,10).decode("utf-8")
+
+    newUser = User(email=email,username=username,password=pw_hash)
     db.session.add(newUser)
     db.session.commit()
 
@@ -31,7 +33,7 @@ def register():
     token2= create_refresh_token(identity={'id':newUser.id,'username':newUser.username})
     response = jsonify({'access':token1})
 
-    set_refresh_cookies(response,token2,max_age=datetime.timedelta(minutes=1))
+    set_refresh_cookies(response,token2,max_age=datetime.timedelta(days=7))
     
     return response,201
 
@@ -54,7 +56,8 @@ def login():
     if not user:
         return jsonify({"error":"Invalid username or password"}), 404
 
-    if user.password != password:
+
+    if not bcrypt.check_password_hash(user.password,password):
         return jsonify({"error":"wrong password"}), 400 
 
 
@@ -62,13 +65,13 @@ def login():
     token2= create_refresh_token(identity={'id':user.id,'username':user.username})
     response = jsonify({'access':token1,"usernameAuth":user.username,"emailAuth":user.email})
 
-    set_refresh_cookies(response,token2,max_age=datetime.timedelta(hours=1))
+    set_refresh_cookies(response,token2,max_age=datetime.timedelta(days=7))
     
     return response,201
 
 
 @user.get('/logout')
-@jwt_required(refresh=True)
+@jwt_required(refresh=True,locations=['cookies'])
 def logout():
     response = jsonify({'msg':'successfully log out'})
     unset_jwt_cookies(response=response)

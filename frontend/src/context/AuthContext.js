@@ -45,12 +45,24 @@ export const AuthContextProvider = ({ children }) => {
 
     return { response, error, access };
   };
-
+  const logout = async () => {
+    const response = await fetch("http://localhost:5000/api/user/logout", {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    auth.access = "";
+    auth.email = "";
+    auth.username = "";
+  };
   const value = {
     auth,
     setAuth,
     login,
     register,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

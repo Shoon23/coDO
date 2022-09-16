@@ -2,6 +2,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useRefreshToken from "../hooks/useRefreshToken";
+import { Spinner } from "../components/Spinner";
 
 export const CheckAccess = () => {
   const [isLoading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ export const CheckAccess = () => {
   return auth?.access ? (
     navigate(-1)
   ) : isLoading ? (
-    <div className="">loading....</div>
+    <div className="">loading.....</div>
   ) : (
     <Outlet />
   );

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import useTodoContext from "../hooks/useTodoContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { DragDropContext } from "react-beautiful-dnd";
 import { Navbar } from "../components/Navbar";
 import { TodoList } from "../components/TodoList";
 import useFetch from "../hooks/useFetch";
+import { useEffect } from "react";
 
 export const Home = () => {
   const { auth } = useAuthContext();
@@ -17,7 +18,6 @@ export const Home = () => {
   }, []);
 
   const handleDrag = async (result) => {
-    console.log(result);
     if (!result.destination) return;
 
     if (
@@ -59,7 +59,12 @@ export const Home = () => {
       <Navbar />
       <div className="w-full">
         <DragDropContext onDragEnd={handleDrag}>
-          <div className="flex justify-center my-10 gap-10 items-start	">
+          <motion.div
+            className="flex justify-center my-10 gap-10 items-start	"
+            initial={{ y: -200 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", stiffness: 100 }}
+          >
             <TodoList
               state={state.progress}
               tableId={"progress"}
@@ -72,7 +77,7 @@ export const Home = () => {
               tableName={"Completed"}
               isDelete={false}
             />
-          </div>
+          </motion.div>
         </DragDropContext>
       </div>
     </div>

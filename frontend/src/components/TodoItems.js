@@ -1,10 +1,12 @@
 import { Draggable } from "react-beautiful-dnd";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useTodoContext from "../hooks/useTodoContext";
 import { Update } from "./Update";
 import { useState } from "react";
+import { Minimize } from "./Minimize";
+import { Maximize } from "./Maximize";
+import { motion } from "framer-motion";
 
-export const TodoItems = ({ item, index, tableId }) => {
+export const TodoItems = ({ item, index, tableId, isMini }) => {
   const { deleteTodo, updateTodo } = useTodoContext();
   const [newValue, setNewValue] = useState("");
   const [isUpdate, setIsUpdate] = useState(false);
@@ -27,41 +29,25 @@ export const TodoItems = ({ item, index, tableId }) => {
   return (
     <>
       <Draggable draggableId={item.id.toString()} index={index} key={item.id}>
-        {(provided, snapshot) => (
-          <div
-            className="card w-11/12 bg-white text-white-content shadow-2xl"
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-          >
-            <div className="card-body">
-              {isUpdate ? (
-                <Update
-                  value={newValue}
-                  setValue={setNewValue}
-                  handleClick={handleUpdate}
-                  handleClose={handleClose}
-                />
-              ) : (
-                <>
-                  <p className="break-all">{item.todo_item} </p>
-                  <div className="card-actions justify-end">
-                    <div className="w-7 h-7">
-                      <PencilIcon
-                        className="w-7 h-7 hover:bg-warning rounded-md"
-                        onClick={openUpdate}
-                      />
-                    </div>
-
-                    <button onClick={() => handleDelete(item.id, tableId)}>
-                      <TrashIcon className="w-7 h-7 hover:bg-error rounded-md" />
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        {(provided, snapshot) =>
+          isMini ? (
+            <Minimize item={item} provided={provided} />
+          ) : (
+            <Maximize
+              newValue={newValue}
+              setNewValue={setNewValue}
+              handleUpdate={handleUpdate}
+              handleClose={handleClose}
+              item={item}
+              provided={provided}
+              openUpdate={openUpdate}
+              handleDelete={handleDelete}
+              isUpdate={isUpdate}
+              Update={Update}
+              tableId={tableId}
+            />
+          )
+        }
       </Draggable>
     </>
   );

@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { PencilSquareIcon, FolderMinusIcon } from "@heroicons/react/24/outline";
+import {
+  PencilSquareIcon,
+  FolderMinusIcon,
+  FolderPlusIcon,
+} from "@heroicons/react/24/outline";
 import { Droppable } from "react-beautiful-dnd";
 import { TodoItems } from "./TodoItems";
 import { Modal } from "./Modal";
 import useTodoContext from "../hooks/useTodoContext";
+import { motion } from "framer-motion";
 
 export const TodoList = ({ state, tableId, tableName, isDelete }) => {
   const { addTodo } = useTodoContext();
   const [todo, newTodo] = useState("");
-
+  const [isMini, setIsMini] = useState(false);
   const handleClick = async () => {
     await addTodo(todo);
     newTodo("");
@@ -30,6 +35,7 @@ export const TodoList = ({ state, tableId, tableName, isDelete }) => {
               item={item}
               index={index}
               tableId={tableId}
+              isMini={isMini}
             />
           ))}
           {provided.placeholder}
@@ -53,11 +59,27 @@ export const TodoList = ({ state, tableId, tableName, isDelete }) => {
                 />
               </div>
 
-              <FolderMinusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md m-5" />
+              <div
+                className="w-8 h-8 m-5"
+                onClick={() => setIsMini((prev) => !prev)}
+              >
+                {isMini ? (
+                  <FolderPlusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md " />
+                ) : (
+                  <FolderMinusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md " />
+                )}
+              </div>
             </div>
           ) : (
-            <div className="flex w-full justify-center">
-              <FolderMinusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md m-5" />
+            <div
+              className="flex w-full justify-center"
+              onClick={() => setIsMini((prev) => !prev)}
+            >
+              {isMini ? (
+                <FolderPlusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md " />
+              ) : (
+                <FolderMinusIcon className="w-8 h-8 hover:bg-[#92b7c3] rounded-md " />
+              )}
             </div>
           )}
         </div>

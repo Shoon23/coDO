@@ -43,7 +43,7 @@ export const TodoContextProvider = ({ children }) => {
     const completedLen = state.completed.length;
 
     const order = progressLen + completedLen;
-    console.log(order);
+
     const { data } = await api("http://localhost:5000/api/todo/new", {
       method: "POST",
       headers: {
@@ -56,7 +56,6 @@ export const TodoContextProvider = ({ children }) => {
       }),
     });
     dispatch({ type: "ADD_TODO", payload: data });
-    console.log(state.progress);
   };
   const deleteTodo = async (id, tableId) => {
     const { data } = await api(`http://localhost:5000/api/todo/delete/${id}`, {

@@ -11,7 +11,6 @@ const useRefreshToken = () => {
         "Content-Type": "application/json",
       },
     });
-
     const token = await response.json();
 
     setAuth({ username: token.username, access: token.access });
