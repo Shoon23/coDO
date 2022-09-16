@@ -1,2 +1,3 @@
 from .UserModel import User
-from .TodoModel import Todo
+from .ProgressModel import ProgressTodo
+from .CompletedTodo import CompletedTodo

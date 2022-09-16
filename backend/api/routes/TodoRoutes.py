@@ -1,9 +1,10 @@
 from flask import Blueprint, request,jsonify
-from ..models.TodoModel import Todo
+from ..models.ProgressModel import ProgressTodo
+from ..models.CompletedTodo import CompletedTodo
 from ..models.UserModel import User
 from ..extensions import db
-from ..schema.TodoSchema import todo_schema,todos_schema
-from flask_jwt_extended import jwt_required,get_jwt_identity,create_access_token
+from ..schema.TodoSchema import todoSchema,todosSchema
+from flask_jwt_extended import jwt_required,get_jwt_identity
 
 
 
@@ -21,69 +22,104 @@ def create_new_todo():
     if not todo:
         return jsonify({"message":"empty todo invalid"})
 
-    user_id = get_jwt_identity()
+    userId = get_jwt_identity()
 
-    newTodo = Todo(todo_item=todo, user_id=user_id,order=todoOrder)
+    newTodo = ProgressTodo(todo_item=todo, user_id=userId,order=todoOrder)
     db.session.add(newTodo)
     db.session.commit()
     
-    return jsonify(todo_schema.dump(newTodo)),201
+    return jsonify(todoSchema.dump(newTodo)),201
 
-#get all todo
+#get all todo in progress
 @todo.get('/list')
 @jwt_required()
 def get_all():
 
     user_id = get_jwt_identity()
 
-    todos = Todo.query.filter_by(user_id=user_id).order_by(Todo.order.asc()).all()
+    progTodos = ProgressTodo.query.filter_by(user_id=user_id).order_by(ProgressTodo.order.asc()).all()
+    compTodos = CompletedTodo.query.filter_by(user_id=user_id).order_by(CompletedTodo.order.asc()).all()
+    return jsonify({"progress":todosSchema.dump(progTodos),"completed":todosSchema.dump(compTodos)}),200
 
-    return jsonify(todos_schema.dump(todos)),200
 
 
-
-#update todo
-@todo.put('/update/<int:todo_id>')
+@todo.put('/move/<int:todo_id>')
 @jwt_required()
-def update_todo(todo_id):
+def move_todo(todo_id):
+    tableId = request.json["tableId"]
 
-    newTodo = request.json['todo_item']
-    todoStatus = request.json['isCompleted']
-    todo = Todo.query.filter_by(id=todo_id).first()
+    if tableId == "completed" :
+        prog = ProgressTodo.query.filter_by(id=todo_id).first()
+        comp = CompletedTodo(todo_item=prog.todo_item,createdAt=prog.createdAt,order=prog.order,user_id=prog.user_id)
+        db.session.add(comp)
+        db.session.delete(prog)
+        db.session.commit()
+    elif tableId == "progress":
+        comp = CompletedTodo.query.filter_by(id=todo_id).first()
+        prog = ProgressTodo(todo_item=comp.todo_item,createdAt=comp.createdAt,order=comp.order,user_id=comp.user_id)
+        db.session.add(prog)
+        db.session.delete(comp)
+        db.session.commit()
+    return jsonify({"msg":"success"}),200
 
-    if not todo:
-        return jsonify({"error":"Not found"}),404
 
-    if newTodo:
-       todo.todo_item = newTodo
-    if todoStatus or todoStatus == 0:
-        todo.isCompleted = todoStatus
+@todo.put('/switch')
+@jwt_required()
+def switch_todo():
+    todosRequest = request.json['orders']
+    tableId = request.json['tableId']
+    user_id = get_jwt_identity()
+
+    if tableId =="progress":
+        progTodos = ProgressTodo.query.filter_by(user_id=user_id).order_by(ProgressTodo.order.asc()).all()
+    elif tableId == "completed":
+        progTodos = CompletedTodo.query.filter_by(user_id=user_id).order_by(CompletedTodo.order.asc()).all()
+
+
+    for i in range((len(todosRequest))):
+        
+        if todosRequest[i]['order']!=i:
+            todosRequest[i]['order'] = i
+
+    for i in range((len(progTodos))):
+        if progTodos[i].todo_item!=todosRequest[i]['todo_item']:
+            for j in range((len(todosRequest))):
+                if progTodos[i].todo_item == todosRequest[j]['todo_item']:
+                    progTodos[i].order = todosRequest[j]['order']
+                    db.session.commit()
+    return jsonify({"msg":"sucess"}),200
+
+@todo.put("/update/<int:todoId>")
+@jwt_required()
+def update_todo(todoId):
+    newTodo =  request.json['todo_item']
+    tableId = request.json['tableId']
+
+    if tableId == "progress":
+        todo = ProgressTodo.query.filter_by(id=todoId).first()
+    elif tableId == "completed":
+        todo = CompletedTodo.query.filter_by(id=todoId).first()
+
+    todo.todo_item = newTodo
 
     db.session.commit()
-    return jsonify(todo_schema.dump(todo)),200
+
+    return jsonify({"msg":"updated"}),200
+
 
 
 #delete todo
 @todo.delete('/delete/<int:todo_id>')
 @jwt_required()
-def delete_all_todo(todo_id):
+def delete_todo(todo_id):
+    tableId = request.json["tableId"]
 
-    todo = Todo.query.filter_by(id=todo_id).first()
-    
+    if tableId == "completed":
+        todo = CompletedTodo.query.filter_by(id=todo_id).first()
+    elif tableId == "progress":
+        todo = ProgressTodo.query.filter_by(id=todo_id).first()
+
     db.session.delete(todo)
     db.session.commit()
-
-    return jsonify({"msg":"successfully deleted"}),200
-
-#delete all todo
-@todo.delete('/delete/all/<string:email>')
-@jwt_required()
-def delete_todo(email):
-
-    user = User.query.filter_by(email=email).first()
-    user_todo = user.todos
-    db.session.delete(user_todo)
-    db.session.commit()
-
 
     return jsonify({"msg":"successfully deleted"}),200

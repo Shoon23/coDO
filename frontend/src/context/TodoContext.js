@@ -15,6 +15,7 @@ const reducer = (state, action) => {
     case "ADD_TODO":
       return {
         progress: [...state.progress, action.payload],
+        completed: [...state.completed],
       };
     case "DELETE_TODO_PROGRESS":
       return {
@@ -38,7 +39,10 @@ export const TodoContextProvider = ({ children }) => {
   const { auth } = useAuthContext();
 
   const addTodo = async (todo) => {
-    const order = state.progress.length;
+    const progressLen = state.progress.length;
+    const completedLen = state.completed.length;
+
+    const order = progressLen + completedLen;
     console.log(order);
     const { data } = await api("http://localhost:5000/api/todo/new", {
       method: "POST",
@@ -54,23 +58,24 @@ export const TodoContextProvider = ({ children }) => {
     dispatch({ type: "ADD_TODO", payload: data });
     console.log(state.progress);
   };
-  const deleteTodo = async (id, table) => {
+  const deleteTodo = async (id, tableId) => {
     const { data } = await api(`http://localhost:5000/api/todo/delete/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${auth.access}`,
       },
+      body: JSON.stringify({ tableId }),
     });
 
-    if (table === "progress") {
+    if (tableId === "progress") {
       dispatch({ type: "DELETE_TODO_PROGRESS", prog: id });
     } else {
       dispatch({ type: "DELETE_TODO_COMPLETED", comp: id });
     }
   };
 
-  const updateTodo = async (id, updatedTodo, table) => {
+  const updateTodo = async (id, todo_item, tableId) => {
     const { data, response } = await api(
       `http://localhost:5000/api/todo/update/${id}`,
       {
@@ -79,24 +84,50 @@ export const TodoContextProvider = ({ children }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${auth.access}`,
         },
-        body: JSON.stringify({ todo_item: updatedTodo, isCompleted: "" }),
+        body: JSON.stringify({ todo_item, tableId }),
       }
     );
-    if (table === "progress") {
+    if (tableId === "progress") {
       state.progress.map((item) => {
         if (item.id === id) {
-          item.todo_item = updatedTodo;
+          item.todo_item = todo_item;
         }
       });
     } else {
       state.completed.map((item) => {
         if (item.id === id) {
-          item.todo_item = updatedTodo;
+          item.todo_item = todo_item;
         }
       });
     }
   };
-
+  const updateStatus = async (id, tableId) => {
+    const { data, response } = await api(
+      `http://localhost:5000/api/todo/move/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.access}`,
+        },
+        body: JSON.stringify({ tableId }),
+      }
+    );
+  };
+  const switchCard = async (orders, tableId, table1, table2) => {
+    const { data } = await api("http://localhost:5000/api/todo/switch", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.access}`,
+      },
+      body: JSON.stringify({
+        orders,
+        tableId,
+      }),
+    });
+    dispatch({ type: "SET_TODO", progress: table1, completed: table2 });
+  };
   const fetchData = async (accessToken) => {
     const { data } = await api("http://localhost:5000/api/todo/list", {
       method: "GET",
@@ -104,15 +135,25 @@ export const TodoContextProvider = ({ children }) => {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    const completed = data.filter((item) => item.isCompleted !== false);
-    const progress = data.filter((item) => item.isCompleted !== true);
-
-    dispatch({ type: "SET_TODO", progress: progress, completed: completed });
+    dispatch({
+      type: "SET_TODO",
+      progress: data.progress,
+      completed: data.completed,
+    });
   };
 
   return (
     <TodoContext.Provider
-      value={{ state, dispatch, addTodo, deleteTodo, updateTodo, fetchData }}
+      value={{
+        state,
+        dispatch,
+        addTodo,
+        deleteTodo,
+        updateTodo,
+        fetchData,
+        updateStatus,
+        switchCard,
+      }}
     >
       {children}
     </TodoContext.Provider>

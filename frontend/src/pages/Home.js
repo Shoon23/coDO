@@ -9,13 +9,14 @@ import useFetch from "../hooks/useFetch";
 export const Home = () => {
   const { auth } = useAuthContext();
   const api = useFetch();
-  const { state, fetchData, dispatch } = useTodoContext();
+  const { state, fetchData, dispatch, updateStatus, switchCard } =
+    useTodoContext();
 
   useEffect(() => {
     fetchData(auth.access);
   }, []);
 
-  const handleDrag = (result) => {
+  const handleDrag = async (result) => {
     console.log(result);
     if (!result.destination) return;
 
@@ -40,30 +41,17 @@ export const Home = () => {
 
     if (result.destination.droppableId === "completed") {
       table2.splice(result.destination.index, 0, add);
-
-      const updataStatus = async (id) => {
-        const { data, response } = await api(
-          `http://localhost:5000/api/todo/update/${id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${auth.access}`,
-            },
-            body: JSON.stringify({ todo_item: "", isCompleted: 1 }),
-          }
-        );
-        console.log(data);
-        console.log(response);
-      };
-      updataStatus(add.id);
+      if (result.source.droppableId === "progress") {
+        await updateStatus(add.id, "completed");
+      }
+      await switchCard(table1, "progress", table1, table2);
     } else {
       table1.splice(result.destination.index, 0, add);
+      if (result.source.droppableId === "completed") {
+        await updateStatus(add.id, "progress");
+      }
+      await switchCard(table1, "progress", table1, table2);
     }
-    console.log(table1);
-    console.log(table2);
-    console.log(result);
-    dispatch({ type: "SET_TODO", progress: table1, completed: table2 });
   };
 
   return (

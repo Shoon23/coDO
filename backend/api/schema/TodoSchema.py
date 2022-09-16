@@ -5,5 +5,5 @@ class TodoSchema(ma.Schema):
         fields = ('todo_item','id','order','isCompleted','createdAt',)
 
 
-todo_schema = TodoSchema()
-todos_schema = TodoSchema(many=True)
+todoSchema = TodoSchema()
+todosSchema = TodoSchema(many=True)

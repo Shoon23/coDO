@@ -6,8 +6,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(30), unique=True, nullable=False)
     password = db.Column(db.String(30), nullable=False)
-    todos = db.relationship('Todo', backref='user', lazy=True,cascade="all, delete-orphan")
-    
+    progress = db.relationship('ProgressTodo', backref='user', lazy=True,cascade="all, delete-orphan")
+    completed = db.relationship('CompletedTodo', backref='user', lazy=True,cascade="all, delete-orphan")
 
     def __repr__(self):
         return '<User %r>' % self.id
