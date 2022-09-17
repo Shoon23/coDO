@@ -6,8 +6,7 @@ a trello clone
 ## Clone the repo
 
 ```
-mkdir <filename>
-cd <filename>
+go to the directory where you want to put the repo then 
 
 git clone https://github.com/Shoon23/coDo.git
 
