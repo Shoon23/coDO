@@ -4,6 +4,7 @@
 ```
 mkdir myproject
 cd myproject
+git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
 python3 -m venv venv
 . venv/bin/activate
 python -m pip install -r requirements.txt
