@@ -1,14 +1,8 @@
 # Frontend
 
-## Available Scripts
-
-In the project directory, you can run:
-
 ```
 cd frontend
 npm install
-
-install all the dependecies required to run the application
 ````
 
 ### `npm start`
