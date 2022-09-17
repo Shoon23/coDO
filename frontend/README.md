@@ -4,10 +4,12 @@
 
 In the project directory, you can run:
 
-### `npm install`
+```
+cd frontend
+npm install
 
 install all the dependecies required to run the application
-
+````
 
 ### `npm start`
 
