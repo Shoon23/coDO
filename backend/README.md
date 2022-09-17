@@ -2,16 +2,14 @@
 
 ## macOS/linux
 ```
-mkdir myproject
-cd myproject
+cd backend
 python3 -m venv venv
 . venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 ## windows
 ```
-mkdir myproject
-cd myproject
+cd backend
 py -3 -m venv venv
 venv\Scripts\activate
 python -m pip install -r requirements.txt
